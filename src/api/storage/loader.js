@@ -6,6 +6,6 @@ var storages = {
 
 module.exports = (name) => {
   let storage = storages[name]
-  Promise.promisifyAll(storage);
+//  Promise.promisifyAll(storage);
   return storage;
 };
