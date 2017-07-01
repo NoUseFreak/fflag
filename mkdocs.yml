@@ -1,0 +1,6 @@
+site_name: Fflags Documentation
+theme: 'material'
+extra:
+  palette:
+    primary: 'blue'
+    accent: 'red'

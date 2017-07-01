@@ -1,0 +1,13 @@
+apps:
+  - name: api
+    script: src/api/app.js
+    watch: true
+  - name: docs
+    script: python
+    args:  -m mkdocs serve -a 0.0.0.0:3001
+    exec_interpreter: none
+  - name: gui
+    script: serve
+    path: src
+    env:
+      PM2_SERVER_PORT: 3002
