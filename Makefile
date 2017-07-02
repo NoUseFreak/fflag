@@ -16,6 +16,7 @@ _install_docs:
 
 _build_docs:
 	python -m mkdocs build --clean -d build/docs
+	apidoc -i src/api -o build/docs/api
 
 _build_api:
 	cp -r src/api build/api

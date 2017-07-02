@@ -7,9 +7,6 @@ var bodyParser = require('body-parser');
 var storageLoader = require('./storage/loader');
 var storage = storageLoader('static');
 
-var flagsInit = require('./routes/flags');
-var flagsRouter = flagsInit(storage);
-
 var app = express();
 
 // uncomment after placing your favicon in /public
@@ -18,7 +15,14 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+var flagsInit = require('./routes/flags');
+var flagsRouter = flagsInit(storage);
 app.use('/v1/flags/', flagsRouter);
+
+var usersInit = require('./routes/users');
+var usersRouter = usersInit(storage);
+app.use('/v1/users/', usersRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

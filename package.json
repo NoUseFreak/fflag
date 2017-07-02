@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "apidoc": "^0.17.6",
     "bluebird": "^3.5.0",
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
@@ -21,5 +22,14 @@
     "morgan": "~1.7.0",
     "pm2": "^2.5.0",
     "serve-favicon": "~2.3.0"
+  },
+  "apidoc": {
+    "title": "Fflag API documentation.",
+    "order": [
+      "List",
+      "Get",
+      "Create",
+      "Update"
+    ]
   }
 }

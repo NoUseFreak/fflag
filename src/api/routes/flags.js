@@ -1,8 +1,46 @@
 var express = require('express');
 var router = express.Router();
+const ApiError = require('../lib/ApiError');
+
+/**
+ * @apiDefine FlagNotFoundError
+ *
+ * @apiError FlagNotFound The id of the Flag was not found.
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "message": "Resource not found",
+ *       "error": {
+ *         "name": "ApiError",
+ *         "status": 404
+ *       }
+ *     }
+ */
+const flagNotFound = (message='Resource not found') => {
+  throw new ApiError(404, message);
+};
+
 
 module.exports = (storage) => {
-  router.get('/', (req, res) => {
+
+  /**
+  * @api {get} /v1/flags List
+  * @apiName List
+  * @apiGroup Flag
+  *
+  * @apiSuccess {Object[]} List of flags.
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 200 OK
+  *     [
+  *       {
+  *         "id": "advanced-search",
+  *         "description": "Advanced search functionality"
+  *       }
+  *     ]
+  */
+  router.get('/', (req, res, next) => {
     storage.getFlags()
       .then((data) => {
         res.json(data);
@@ -12,17 +50,60 @@ module.exports = (storage) => {
       });
   });
 
-  router.get('/:id', (req, res) => {
+  /**
+  * @api {get} /v1/flag/:id Get
+  * @apiName Get
+  * @apiGroup Flag
+  *
+  * @apiParam {Number} id Flag unique ID.
+  *
+  * @apiSuccess {Object} Flag resource.
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 200 OK
+  *     {
+  *       "id": "advanced-search",
+  *       "description": "Advanced search functionality"
+  *     }
+  *
+  * @apiUse FlagNotFoundError
+  */
+  router.get('/:id', (req, res, next) => {
     storage.getFlag(req.params.id)
       .then((data) => {
         if (data === undefined) {
-          res.status(404);
+          flagNotFound();
         }
         res.json(data);
+      })
+      .catch((err) => {
+        next(err);
       });
   });
 
-  router.post('/:id?', (req, res) => {
+  /**
+  * @api {post} /v1/flag/:id? Create
+  * @apiName Create
+  * @apiGroup Flag
+  *
+  * @apiParam {Number} [id] Flag unique ID.
+  * @apiParam {Json} Updated Flag resource
+  *
+  * @apiParamExample {json} Request-Example:
+  *              { "id": "advanced-search", "description": "New description" }
+  *
+  * @apiSuccess {Object} Flag resource.
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 200 OK
+  *     {
+  *       "id": "advanced-search",
+  *       "description": "New description"
+  *     }
+  *
+  * @apiUse FlagNotFoundError
+  */
+  router.post('/:id?', (req, res, next) => {
     const flag = req.body;
     if (req.params.id !== undefined) {
       flag.id = req.params.id;
@@ -35,45 +116,72 @@ module.exports = (storage) => {
               res.status(201);
               res.set('Location', `/api/v1/flags/${data.id}`);
               res.json(data);
+            })
+            .catch((err) => {
+              next(err);
             });
         } else {
-          res.status(409);
-          res.json({
-            status: 409,
-            message: 'Id already in use.'
-          })
+          throw new ApiError(409, 'Id already in use.');
         }
+      })
+      .catch((err) => {
+        next(err);
       });
   });
 
-  router.put('/:id', (req, res) => {
+  /**
+  * @api {put} /v1/flag/:id Update
+  * @apiName Update
+  * @apiGroup Flag
+  *
+  * @apiParam {Number} id Flag unique ID.
+  *
+  * @apiSuccess {Object} Flag resource.
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 200 OK
+  *     {
+  *       "id": "advanced-search",
+  *       "description": "Advanced search functionality"
+  *     }
+  *
+  * @apiUse FlagNotFoundError
+  */
+  router.put('/:id', (req, res, next) => {
     const flag = req.body;
     storage.getFlag(req.params.id)
       .then((data) => {
         if (data === undefined) {
-          res.status(404);
-          res.json({
-            status: 404,
-            message: 'Id not found'
-          })
+          flagNotFound(res);
         } else {
           storage.updateFlag(req.params.id, flag)
             .then((data) => {
               res.json(data);
             });
         }
+      })
+      .catch((err) => {
+        next(err);
       });
   });
 
-  router.delete('/:id', (req, res) => {
+  /**
+  * @api {delete} /v1/flag/:id Delete
+  * @apiName Delete
+  * @apiGroup Flag
+  *
+  * @apiParam {Number} id Flag unique ID.
+  *
+  * @apiSuccessExample Success-Response:
+  *     HTTP/1.1 204 OK
+  *
+  * @apiUse FlagNotFoundError
+  */
+  router.delete('/:id', (req, res, next) => {
     storage.getFlag(req.params.id)
       .then((data) => {
         if (data === undefined) {
-          res.status(404);
-          res.json({
-            status: 404,
-            message: 'Id not found'
-          })
+          flagNotFound(res);
         } else {
           storage.deleteFlag(req.params.id)
             .then((data) => {
@@ -81,6 +189,9 @@ module.exports = (storage) => {
               res.json();
             });
         }
+      })
+      .catch((err) => {
+        next(err);
       });
   });
 
